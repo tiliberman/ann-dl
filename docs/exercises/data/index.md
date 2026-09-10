@@ -145,9 +145,11 @@ como número.
 
 **Sobreposição em $s = 1$.** A sobreposição não é uniforme, é concentrada em um par. As
 classes 0 e 1 se tocam ao longo da diagonal entre $\mu_0 = [2,3]$ e $\mu_1 = [5,6]$ — o par de
-menor $r$ (1,3258) e responsável pela maior parte dos 20 pontos mal atribuídos. A classe 2
-encosta na 1 pela borda inferior ($r_{12} = 2{,}38$), com poucos pontos trocados. A classe 3
-está limpa: seu $r$ mínimo é $3{,}54$, e nenhum ponto dela é confundido.
+menor $r$ (1,3258) e responsável por **14 dos 20** pontos mal atribuídos (8 da classe 0 vão
+para a 1, e 6 da classe 1 vão para a 0). A classe 2 encosta na 1 pela borda inferior
+($r_{12} = 2{,}38$), mas a troca é assimétrica: nenhum ponto da classe 2 é mal atribuído,
+enquanto 6 pontos da classe 1 caem no território dela. A classe 3 está limpa: seu $r$ mínimo
+é $3{,}54$, e nenhum ponto dela é confundido.
 
 **Uma única fronteira linear separa todas as classes?** Não — e isso independe dos dados. Um
 único hiperplano parte o plano em **dois** semiplanos, então no máximo distingue dois grupos.
@@ -420,9 +422,9 @@ infinita. Isso identifica a forma da distribuição sem precisar do histograma:
 
 - **A maioria não gasta nada.** Mais de 60% dos valores são exatamente zero em cada coluna
   (boa parte são passageiros em `CryoSleep`, que por definição não consomem).
-- **A cauda é longuíssima à direita.** O máximo de `FoodCourt` (29 813) está a mais de 65
-  medianas-média de distância do típico; a média inteira é produzida por uma minoria de
-  grandes gastadores.
+- **A cauda é longuíssima à direita.** O máximo de `FoodCourt` (29 813) equivale a **65 vezes
+  a própria média** da coluna (458,08) — e a mediana, o valor realmente típico, é zero. A
+  média inteira é produzida por uma minoria de grandes gastadores.
 - **Média > mediana ⇒ assimetria positiva.** São distribuições de cauda pesada, não
   simétricas — a média sequer é um resumo representativo aqui, já que descreve um passageiro
   que praticamente não existe.
@@ -594,7 +596,7 @@ Sobre a compatibilidade com `tanh`: o treino está exatamente em $[-1, 1]$ e o t
 máximo 1,1383. Ambos ficam dentro da faixa responsiva da ativação — vale lembrar que o
 requisito não é que a *entrada* esteja matematicamente confinada a $[-1, 1]$ (a `tanh` aceita
 qualquer real), e sim que os valores não caiam na região saturada, onde o gradiente
-desaparece. Com $|x| \le 1{,}14$, a derivada da `tanh` ainda vale cerca de 0,32 do seu máximo,
+desaparece. Com $|x| \le 1{,}14$, a derivada da `tanh` ainda vale cerca de 0,34 do seu máximo,
 longe do regime em que o treino trava.
 
 **Qual decisão de pré-processamento mais afetaria o treino da rede?**
