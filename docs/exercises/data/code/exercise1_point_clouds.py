@@ -154,7 +154,7 @@ def figure2(datasets):
     for ax, scale in zip(axes.ravel(), SCALES):
         X, y = datasets[scale]
         scatter_classes(ax, X, y, marker_size=12)
-        ax.set_title(f"s = {scale}  (mixing rate = {mixing_rate(X, y):.3f})")
+        ax.set_title(f"s = {scale}  (mixing rate = {mixing_rate(X, y):.4f})")
         ax.set_xlim(*xlim)
         ax.set_ylim(*ylim)
         ax.grid(alpha=0.25)

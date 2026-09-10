@@ -121,9 +121,10 @@ treinar modelo nenhum. Equivale ao erro de um classificador de centroide mais pr
 
 ![Taxa de mistura em função do fator de escala s](figures/fig03-mixing-rate.png)
 /// caption
-**Figura 3** — Taxa de mistura $\times$ fator de escala $s$. A curva é praticamente linear
-entre $s = 0{,}5$ e $s = 4$, mas o dano por unidade de $s$ é maior no começo: dobrar de
-$0{,}5$ para $1$ multiplica o erro por 20.
+**Figura 3** — Taxa de mistura $\times$ fator de escala $s$. Em termos **absolutos** o trecho
+mais íngreme é o do meio (inclinação 0,153 por unidade de $s$ entre 1 e 2, contra 0,095 entre
+0,5 e 1). Em termos **relativos** o começo é que é brutal: dobrar de $0{,}5$ para $1$
+multiplica o erro por 20, enquanto dobrar de 2 para 4 apenas o dobra.
 ///
 
 **De qual fator de escala em diante as nuvens deixam de ser separáveis por retas?**
@@ -137,9 +138,15 @@ só a classe 3 ainda tem identidade espacial, e mesmo ela invade as demais.
 **O que acontece com o menor $r_{ij}$ nesse ponto?** Ele cruza 1: $r_{01}$ cai de $1{,}3258$
 para $\mathbf{0{,}6629}$. Esse limiar tem leitura direta — $r_{ij} < 1$ significa que a
 distância entre os centros ficou **menor** que a soma dos espalhamentos médios das duas
-classes, isto é, as nuvens se interpenetram em vez de apenas se tocarem. É exatamente onde a
-separabilidade linear se perde, e é por isso que $r_{ij} = 1$ funciona como critério e não só
-como número.
+classes, isto é, as nuvens se interpenetram em vez de apenas se tocarem.
+
+Sendo preciso: $r_{01}$ cruza 1 em $s = 1{,}3258$, e a separabilidade linear *estrita* — zero
+erros — já se perde bem antes, por volta de $s \approx 0{,}7$. A degradação é contínua, sem
+nenhum salto em $s = 2$ nem em $s = 1{,}33$. Não existe, portanto, um valor "empírico" a
+descobrir: entre os quatro valores testados, $s = 2$ é o primeiro em que $r_{\min} < 1$, e
+$r_{ij} = 1$ é o critério que o próprio enunciado sugere ao perguntar o que acontece com o
+menor $r_{ij}$ nesse ponto. É um critério com significado geométrico, e não uma inspeção
+visual — que é o que o torna defensável.
 
 ### C — Analysis
 
@@ -157,10 +164,16 @@ Com 4 classes, o melhor que uma reta faz é separar um grupo dos demais.
 
 **Um conjunto de fronteiras lineares?** Sim, quase perfeitamente em $s = 1$. Bastam três
 retas bem colocadas (uma isolando a classe 3 à direita, uma separando a 2 abaixo, e uma entre
-0 e 1) para acertar em torno de 95% dos pontos. É precisamente isso que uma rede rasa faz: a
-fronteira **linear por partes** que emerge da combinação de várias unidades. O resíduo de 5%
-está na zona 0–1, e nenhuma reta o elimina, porque as duas nuvens genuinamente se
-interpenetram ali.
+0 e 1). É precisamente isso que uma rede rasa faz: a fronteira **linear por partes** que
+emerge da combinação de várias unidades.
+
+Vale distinguir dois números que é fácil confundir. A taxa de mistura de 5% é o erro do
+**centroide mais próximo**, não o piso de um classificador linear — retas bem posicionadas
+fazem melhor que a partição de Voronoi, porque podem se deslocar na direção da classe mais
+concentrada. Medido no meu próprio conjunto em $s = 1$, o melhor modelo linear multiclasse
+erra **11 de 400 (2,75%)**, contra os 20 de 400 do centroide. As retas cortam o resíduo
+praticamente pela metade — o que elas não fazem é zerá-lo, porque as nuvens 0 e 1 genuinamente
+se interpenetram ali.
 
 ![Figura 1 com as fronteiras de decisão esboçadas por cima](figures/fig01b-decision-boundaries.png)
 /// caption
@@ -179,10 +192,25 @@ quadrática, e não uma reta — o que a rede aproxima por vários segmentos.
 
 **Relação com o item B.** À medida que $s$ cresce, a região onde a rede **necessariamente**
 erra cresce junto, e essa é a parte que nenhum ajuste de arquitetura resolve. Onde as
-densidades das duas classes se sobrepõem, existe um erro de Bayes irredutível: para um ponto
-naquela região, a classe mais provável simplesmente não é certa. Os números medem isso — o
-piso de erro sai de 0,25% ($s = 0{,}5$) para 43% ($s = 4$) sem que nada além do espalhamento
-tenha mudado. Duas consequências práticas:
+densidades das duas classes se sobrepõem existe um **erro de Bayes** irredutível: para um
+ponto naquela região, a classe mais provável simplesmente não é certa.
+
+Aqui é preciso cuidado com o que a taxa de mistura mede. Ela é o erro de um classificador
+específico — o centroide mais próximo — e portanto um **limite superior** do erro de Bayes,
+nunca o piso. Calculando o erro de Bayes de verdade para estas gaussianas diagonais
+(densidades conhecidas, prioris iguais):
+
+| $s$ | Taxa de mistura (centroide) | Erro de Bayes real |
+|-----|------------------------------|--------------------|
+| 0,5 | 0,0025 | ≈ 0,0003 |
+| 1,0 | 0,0500 | ≈ 0,0301 |
+| 2,0 | 0,2025 | ≈ 0,1581 |
+| 4,0 | 0,4300 | ≈ 0,3331 |
+
+O piso real vai de ~0,03% a ~33% — a mesma história de crescimento, mas a taxa de mistura
+superestima o inevitável, e em $s = 4$ superestima em cerca de 10 pontos percentuais. O que é
+irredutível é a coluna da direita; a diferença entre as duas colunas é exatamente o que uma
+fronteira melhor que Voronoi consegue recuperar. Duas consequências práticas:
 
 1. **Mais capacidade não ajuda.** Em $s = 4$ os centros estão nos mesmos lugares de $s = 0{,}5$;
    o que mudou foi a densidade. Uma rede maior só conseguiria decorar o ruído do conjunto de
@@ -302,9 +330,17 @@ $w^\top \mu_C$ e $w^\top \mu_D$; como $\mu_C \approx \mu_D \approx 0$, as duas p
 **a mesma média**, qualquer que seja $w$. Pior: como as duas classes são esfericamente
 simétricas em torno da origem, a projeção de cada uma sobre qualquer direção é simétrica em
 torno de zero. As duas distribuições projetadas ficam centradas no mesmo ponto, e a casca
-— que é mais larga — cobre o núcleo dos dois lados. Um corte nessa reta sempre deixa metade
-da casca do lado errado; a acurácia de qualquer hiperplano fica em torno de 50%, o mesmo que
-chutar.
+— que é mais larga — cobre o núcleo dos dois lados. Qualquer corte nessa reta erra pelo menos
+metade de uma das duas classes: cortando à direita, perde-se metade da casca; cortando à
+esquerda, perde-se boa parte do núcleo.
+
+Convém dar o número certo aqui, porque o argumento é qualitativo e é tentador exagerá-lo. Os
+estimadores lineares usuais de fato ficam perto do acaso — regressão logística e LDA marcam
+0,551 neste conjunto. Mas o **melhor hiperplano possível** não fica em 50%: varrendo 20 000
+direções e todos os limiares, o teto é **0,653** (e ~0,62 fora da amostra). A razão é que a
+projeção da casca tem desvio $5/\sqrt{5} = 2{,}24$ contra $2/\sqrt{5} = 0{,}89$ do núcleo, e
+um corte lá na cauda captura massa da casca que o núcleo não alcança. Continua sendo um
+fracasso — 0,65 contra **1,00** da regra radial — mas "em torno de 50%" seria falso.
 
 A informação, portanto, existe e é forte (Figura 5 mostra classes quase disjuntas em raio),
 mas está guardada em uma estatística que a projeção linear destrói.
@@ -315,18 +351,26 @@ a fronteira que um separador linear produz é um **hiperplano**, e a região que
 um semiespaço. Nenhum semiespaço é igual a uma bola: o semiespaço é ilimitado em uma direção,
 a bola é limitada em todas. Mais dados estimam melhor os parâmetros de um modelo, mas não
 mudam o conjunto de fronteiras que aquele modelo consegue expressar. Um perceptron com um
-milhão de amostras deste conjunto continua com ~50% de acurácia. É preciso mudar a **família
-de funções** — uma camada oculta, ou uma feature construída à mão.
+milhão de amostras deste conjunto continua preso ao teto de ~0,65 — e, como o conjunto não é
+linearmente separável, o algoritmo do perceptron sequer converge: ele oscila indefinidamente.
+É preciso mudar a **família de funções** — uma camada oculta, ou uma feature construída à mão.
 
 **PCA é linear: uma projeção 2D embaralhada prova que as classes são inseparáveis?** Não, e
-este conjunto é o contraexemplo. A Figura 4 (direita) mostra as duas classes ocupando a mesma
-região do plano PC1–PC2, e a projeção retém apenas 43,16% da variância. Se a conclusão fosse
-"as classes se misturam, logo são inseparáveis", ela estaria **errada** — as classes são
-separáveis com acurácia perfeita. Uma projeção linear ruim é evidência sobre a *projeção*, não
-sobre os dados: PCA maximiza variância retida, que não é a mesma coisa que separabilidade
-entre classes (PCA sequer olha para os rótulos). O que a Figura 4 realmente demonstra é que
-**nenhuma direção linear** separa — que é justamente a hipótese a testar, não a conclusão a
-tirar.
+este conjunto é o contraexemplo — mas é preciso ler a Figura 4 com atenção, porque ela diz
+algo mais interessante do que "embaralhado".
+
+As classes **não** estão misturadas na Figura 4 (direita): o que se vê é um alvo, um núcleo
+azul denso dentro de um anel vermelho. A projeção retém só 43,16% da variância e ainda assim
+preserva estrutura visível. Quantificando no próprio plano PC1–PC2: a melhor **reta** acerta
+apenas **0,651**, enquanto o melhor **círculo** centrado na origem acerta **0,882**. Ou seja,
+a projeção não destruiu a informação — ela destruiu a possibilidade de usá-la *linearmente*.
+
+Se alguém olhasse esse painel e concluísse "as classes se sobrepõem, logo são inseparáveis",
+estaria **errado** por duas razões independentes: a projeção nem sequer as sobrepõe, e mesmo
+que sobrepusesse isso seria evidência sobre a *projeção*, não sobre os dados. PCA maximiza
+variância retida, que não é a mesma coisa que separabilidade entre classes — ele sequer olha
+para os rótulos. O que a Figura 4 demonstra é que **nenhuma direção linear** separa, que é a
+hipótese a testar, não a conclusão a tirar.
 
 **Uma função simples das entradas que separa o Dataset II.** O raio ao quadrado, que é uma
 soma de quadrados das coordenadas e dispensa raiz:
@@ -450,9 +494,16 @@ aqui é *ajustada* a partir de estatísticas do dado — a mediana que preenche 
 categorias que definem as colunas do one-hot, o mínimo e o máximo que definem a escala. Se
 essas estatísticas forem calculadas sobre a tabela inteira, elas carregam informação das
 linhas de teste para dentro do modelo, e o teste deixa de ser uma simulação de dado novo:
-é **vazamento de dados**, e a performance reportada passa a ser otimista de forma não
-verificável. Ajustando só no treino, o conjunto de teste ocupa o papel que deve ocupar — dado
-que o modelo nunca viu, nem diretamente nem através dos parâmetros de uma transformação.
+é **vazamento de dados** — mais precisamente **contaminação treino-teste**, na taxonomia vista
+em aula (alvo / contaminação treino-teste / temporal / engenharia de features) — e a
+performance reportada passa a ser otimista de forma não verificável. Ajustando só no treino, o
+conjunto de teste ocupa o papel que deve ocupar: dado que o modelo nunca viu, nem diretamente
+nem através dos parâmetros de uma transformação.
+
+Uma ressalva de escopo: o enunciado pede 80/20, então o que chamo de "teste" aqui é o único
+conjunto retido. Não há conjunto de validação, e portanto nenhuma decisão de hiperparâmetro
+poderia ser tomada sem gastar o teste — o que, num projeto real com este tamanho de amostra,
+pediria 60/20/20 ou validação cruzada.
 
 ``` mermaid
 flowchart LR
@@ -477,6 +528,14 @@ A ordem importa, e cada passo é ajustado no treino e apenas aplicado no teste.
 Valores aprendidos **no treino**: `Age` → 27,0; os cinco gastos → 0,0; `HomePlanet` → `Earth`;
 `CryoSleep` → `False`; `Destination` → `TRAPPIST-1e`; `VIP` → `False`.
 
+**Sobre o mecanismo de ausência.** A estratégia deveria seguir o mecanismo, e não apenas a
+porcentagem. Tratei os ausentes como **MCAR** (completamente aleatórios), o que a uniformidade
+das taxas — todas entre 2,06% e 2,50%, sem coluna destoante — torna plausível. Mas os gastos
+provavelmente são **MAR**: dado `CryoSleep = True`, o gasto é zero por construção, então a
+ausência é explicável por outra variável observada. É esse o argumento que transforma a
+imputação condicional a `CryoSleep`, que menciono na Discussão, de palpite em escolha
+principiada — e é a melhoria mais óbvia que deixei de fora.
+
 #### 2. Feature engineering
 
 `TotalSpend` = soma das cinco colunas de gasto, calculada **sobre os valores brutos** (antes
@@ -495,8 +554,19 @@ mesma justificativa). A escolha de $\log(1+x)$ em vez de $\log(x)$ é o que perm
 zeros: $\log(1+0) = 0$, então os mais de 60% de não-gastadores permanecem em zero em vez de
 virar $-\infty$.
 
-O efeito medido em `FoodCourt` (treino): a assimetria cai de **7,38 para 1,16** e o máximo de
+O efeito medido em `FoodCourt` (treino): a assimetria cai de **7,30 para 1,16** e o máximo de
 **29 813 para 10,30**.
+
+!!! note "O que conta como \"antes de transformar\""
+
+    Os valores "antes" nesta página — média **452,61**, mediana **0,00**, assimetria **7,30**,
+    e o painel esquerdo da Figura 6 — são medidos no `FoodCourt` **bruto do treino, com os 154
+    ausentes descartados**, não preenchidos. A imputação já é uma transformação: preencher
+    aqueles 154 com a mediana (0) puxa a média de 452,61 para 442,59 e a assimetria de 7,30
+    para 7,38. Reportar o número pós-imputação como "antes de transformar" seria descrever o
+    resultado de um passo do pré-processamento como se fosse o dado cru — é uma diferença
+    pequena em magnitude, mas de significado, e por isso o script captura a série antes do
+    imputador (`raw_foodcourt_train = X_train["FoodCourt"].dropna()`).
 
 **Por que isso ajuda uma rede com `tanh`?** Porque `tanh` **satura**. Fora de aproximadamente
 $[-2, 2]$ a curva fica plana e sua derivada tende a zero; um neurônio que recebe entradas
@@ -537,14 +607,30 @@ e regularização.
 
 **Normalização para $[-1, 1]$** com `MinMaxScaler(feature_range=(-1, 1))`, ajustada no treino.
 
-**Por que essa e não a padronização?** Pelo mesmo motivo de saturação do item 3. A
-padronização (média 0, desvio 1) não impõe limite superior: as colunas de gasto, mesmo depois
-do log, mantêm assimetria residual, e vários valores cairiam além de $|z| = 3$ — dentro da
-região plana da `tanh`, onde o gradiente morre. O min-max para $[-1, 1]$ garante por
-construção que **todo valor de treino** caia no intervalo em que a `tanh` é responsiva, e
-centra os dados em zero, que é onde a curva tem inclinação máxima. Como o alvo é
-explicitamente uma rede com `tanh`, casar o intervalo de entrada com o de saída da ativação é
-a escolha mais direta.
+**Por que essa e não a padronização?** Convém primeiro descartar um argumento que *não* se
+sustenta nestes dados. Depois do $\log(1+x)$ as colunas de gasto ficam bem comportadas — o
+maior $|z|$ entre elas vai de 2,86 (`RoomService`) a 3,06 (`ShoppingMall`), e apenas **2 de
+48 678** valores da matriz padronizada passariam de $|z| = 3$. Ou seja: aqui a padronização
+**não** jogaria as colunas de gasto na região plana da `tanh`, e justificar o min-max por
+"salvar outliers" seria justificar com um número que os dados contradizem.
+
+O motivo real é outro, e é de garantia, não de magnitude. A padronização não impõe limite
+algum: o teto da matriz passa a depender de qual for o maior valor observado — aqui o treino
+padronizado ocuparia $[-2{,}00;\ +3{,}51]$, com a `Age` chegando a $|z| = 3{,}51$. O min-max
+para $[-1, 1]$ prende **todo valor de treino** ao intervalo por construção, que é exatamente
+o intervalo que a própria `tanh` devolve. Isso mantém a escala da pré-ativação $Wx + b$
+previsível na inicialização — e é a pré-ativação, não a feature isolada, que decide se o
+neurônio começa na parte responsiva da curva.
+
+!!! warning "Uma ressalva honesta sobre o min-max"
+
+    O min-max centra o **intervalo**, não os **dados**. Depois de escalonadas, as cinco
+    colunas de gasto têm mediana exatamente $-1$ e média em torno de $-0{,}64$, porque 63% dos
+    passageiros não gastaram nada e todos eles caem no piso. Quem de fato centraria os dados
+    em zero — onde a `tanh` tem inclinação máxima — é a padronização. Então a escolha é um
+    troco: ganho o intervalo garantido e perco a centralização. Para uma rede com `tanh` e
+    termo de viés, o viés aprende a compensar o deslocamento, e é por isso que continuo
+    preferindo o intervalo garantido.
 
 | Conjunto | Mínimo | Máximo |
 |----------|--------|--------|
@@ -555,8 +641,12 @@ O treino fica exatamente em $[-1, 1]$ — é a definição do min-max. O teste *
 ligeiramente**, chegando a 1,1383, e isso não é um defeito: significa que alguma linha de
 teste tem um gasto maior que o maior gasto visto no treino. O scaler nunca viu esse valor, e
 esse é justamente o comportamento correto — é assim que o modelo se comportaria em produção,
-diante de um dado novo. Recortar para $[-1, 1]$ ou reajustar o scaler no teste seria vazamento.
-Um excesso de 14% está bem dentro da região útil da `tanh`, então não há prejuízo prático.
+diante de um dado novo. **Reajustar** o scaler no teste seria vazamento, e por isso não faço.
+Já *recortar* em $[-1, 1]$ usando os limites aprendidos no treino **não** seria vazamento —
+usa só parâmetros do treino, e é prática comum em produção; é uma opção legítima que eu
+apenas não escolhi, porque descartar a informação de que aquele passageiro gastou mais que
+qualquer um do treino não me parece ganho. Um excesso de 13,8% está bem dentro da região útil
+da `tanh`, então não há prejuízo prático.
 
 As colunas one-hot ficam em $\{0, 1\}$ e não são escalonadas: já estão dentro de $[-1, 1]$ e
 reescaloná-las destruiria a interpretação binária.
@@ -567,13 +657,14 @@ reescaloná-las destruiria a interpretação binária.
 /// caption
 **Figura 6** — `FoodCourt` no conjunto de treino, antes (bruto, eixo $y$ logarítmico para que
 a cauda seja visível) e depois de $\log(1+x)$ seguido de escalonamento para $[-1, 1]$. A
-assimetria cai de 7,38 para 1,16.
+assimetria cai de 7,30 para 1,16.
 ///
 
 A figura mostra o que os números do item C descrevem. À esquerda, praticamente toda a massa
 está encostada no zero e a cauda se arrasta até 29 813 — precisei de escala logarítmica no
-eixo $y$ para que as barras da cauda sequer aparecessem. À direita, o pico em $-1$ são os
-~63% de passageiros que não gastaram nada (preservados exatamente em zero pelo $\log(1+x)$), e
+eixo $y$ para que as barras da cauda sequer aparecessem. À direita, o pico em $-1$ concentra
+**65,3%** do treino — os passageiros que não gastaram nada, preservados exatamente em zero
+pelo $\log(1+x)$, mais os 2,2 pontos percentuais de ausentes que a mediana preencheu com 0 — e
 o restante se espalha por uma faixa contínua até cerca de $0{,}8$, em vez de se amontoar em um
 único bin.
 
@@ -641,7 +732,7 @@ informativa — o tipo de erro que não aparece em nenhuma verificação de NaN 
 | 8 | Explained variance PC1 + PC2 — Dataset I | **0,6597** (65,97%) |
 | 9 | Explained variance PC1 + PC2 — Dataset II | **0,4316** (43,16%) |
 | 10 | Share of the positive class in `Transported` | **50,36%** (4 378 de 8 693) |
-| 11 | Mean and median of `FoodCourt` on the training set, before transforming | média **442,59** · mediana **0,00** |
+| 11 | Mean and median of `FoodCourt` on the training set, before transforming | média **452,61** · mediana **0,00** |
 | 12 | Final shape of the training feature matrix | **(6 954, 17)** |
 | 13 | Minimum and maximum of the training and test sets after scaling | treino $[-1{,}0000;\ 1{,}0000]$ · teste $[-1{,}0000;\ 1{,}1383]$ |
 
@@ -654,9 +745,14 @@ espalhamentos — e que $r_{01}$ cruza esse limiar exatamente entre $s = 1$ e $s
 intervalo em que a taxa de mistura quadruplica. Duas medidas independentes apontando para o
 mesmo lugar é um argumento; uma inspeção visual não é.
 
-**Onde a intuição falhou.** No Dataset II. Meu reflexo ao ver a projeção PCA embaralhada foi
-"esse conjunto é difícil", quando na verdade ele é *trivial* — 100% de acurácia com uma soma
-de quadrados. O erro foi tratar uma projeção linear como se fosse uma visão neutra dos dados.
+**Onde a intuição falhou.** No Dataset II, duas vezes. Primeiro, meu reflexo ao ver a projeção
+PCA foi "esse conjunto é difícil", quando na verdade ele é *trivial* — 100% de acurácia com
+uma soma de quadrados. O erro foi tratar uma projeção linear como se fosse uma visão neutra
+dos dados. Segundo, e mais sutil: eu tinha escrito que a Figura 4 mostrava as classes
+"misturadas", e ao conferir percebi que ela não mostra nada disso — mostra um alvo, e um
+círculo nesse plano já acerta 88,2%. O que a projeção destrói não é a informação, é a
+possibilidade de usá-la com uma reta. Confundir "não separável linearmente" com "embaralhado"
+é exatamente o erro que o item D pede para não cometer, e eu o cometi na primeira redação.
 Também me surpreendeu que os centros ficassem a 0,2666 em vez de 0: bastou lembrar que 500
 direções aleatórias não se cancelam perfeitamente.
 
@@ -673,7 +769,8 @@ problema de classificação não está no número de features nem no volume de d
 geometria das distribuições**.
 
 O Exercício 1 mostra que a dificuldade é contínua e mensurável antes de qualquer treino — as
-médias nunca mudaram, só o espalhamento, e a taxa de erro irredutível foi de 0,25% a 43%. O
+médias nunca mudaram, só o espalhamento, e o erro de Bayes irredutível foi de ~0,03% a ~33%
+(com a taxa de mistura subindo de 0,25% a 43% junto). O
 Exercício 2 mostra que ela também é **qualitativa**: dois conjuntos com a mesma dimensão e o
 mesmo tamanho exigem famílias de fronteiras diferentes, e nenhum volume de dados converte um
 hiperplano em uma hiperesfera. O Exercício 3 mostra que, em dados reais, o espalhamento chega

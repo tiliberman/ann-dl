@@ -124,6 +124,13 @@ def preprocess(X_train, X_test):
 
     train = X_train.copy()
     test = X_test.copy()
+
+    # Captured BEFORE imputation. The statement asks for FoodCourt "before transforming",
+    # and imputation is itself the first transformation -- filling 154 missing values with
+    # the median (0) drags the mean down from 452.61 to 442.59 and would quietly report a
+    # post-processing number as the raw one. Missing entries are dropped, not filled.
+    raw_foodcourt_train = X_train["FoodCourt"].dropna()
+
     train[numeric_cols] = numeric_imputer.fit_transform(train[numeric_cols])
     test[numeric_cols] = numeric_imputer.transform(test[numeric_cols])
     train[CATEGORICAL] = categorical_imputer.fit_transform(train[CATEGORICAL])
@@ -147,7 +154,6 @@ def preprocess(X_train, X_test):
     # log(1+x) keeps the zeros at zero and pulls a 20000-credit outlier to ~10, so the
     # spread of the column stops being dictated by a handful of passengers.
     spend_log = SPENDING + ["TotalSpend"]
-    raw_foodcourt_train = train["FoodCourt"].copy()
     train[spend_log] = np.log1p(train[spend_log])
     test[spend_log] = np.log1p(test[spend_log])
     print("\n3. log(1 + x) applied to the spending columns and to TotalSpend")
@@ -178,11 +184,14 @@ def preprocess(X_train, X_test):
     print("   any such category would become an all-zero row, never an error")
 
     # --- 5. Scaling -------------------------------------------------------------
-    # Normalisation to [-1, 1] rather than standardisation: tanh saturates outside
-    # roughly [-2, 2], and standardisation leaves the log-spending columns with values
-    # past |z| = 3, which land in the flat part of the curve where the gradient dies.
-    # Min-max to [-1, 1] puts every training value inside the responsive region by
-    # construction, and centres it on 0, which is where tanh has its steepest slope.
+    # Normalisation to [-1, 1] rather than standardisation. After the log the spending
+    # columns are already tame (max |z| between 2.86 and 3.06), so this is not about
+    # rescuing outliers: standardisation would leave the training matrix spanning
+    # [-2.00, +3.51], with Age reaching |z| = 3.51 and the upper bound depending on
+    # whatever the largest value happens to be. Min-max bounds every training value to
+    # exactly [-1, 1] by construction, which is the range tanh itself outputs -- keeping
+    # the pre-activation Wx+b at a predictable scale at initialisation, which is what
+    # actually decides whether the unit starts in the responsive part of the curve.
     numeric_final = ["Age"] + SPENDING + ["TotalSpend"]
     scaler = MinMaxScaler(feature_range=(-1, 1))
     train_numeric = scaler.fit_transform(train[numeric_final])
