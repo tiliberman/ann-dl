@@ -5,11 +5,11 @@
 #  ANTES DE PUBLICAR: troque todas as linhas marcadas com "# TROCAR" abaixo.
 #  Passo a passo em docs/template/index.md > Publicação no GitHub Pages.
 # =============================================================================
-site_name: ANN-DL · Entregas                  # TROCAR: título exibido no topo do site
-site_author: Seu Nome, Sobrenome              # TROCAR: seu nome (ou os nomes do grupo)
-site_url: https://repo-classes.github.io/ann-dl    # TROCAR: https://<seu-usuario>.github.io/<seu-repo>
-repo_url: https://github.com/repo-classes/ann-dl/   # TROCAR: https://github.com/<seu-usuario>/<seu-repo>
-repo_name: repo-classes/ann-dl                     # TROCAR: <seu-usuario>/<seu-repo>
+site_name: ANN-DL · Entregas — Tiago Liberman
+site_author: Tiago Liberman
+site_url: https://tiliberman.github.io/ann-dl
+repo_url: https://github.com/tiliberman/ann-dl/
+repo_name: tiliberman/ann-dl
 
 theme:
   name: material
@@ -164,7 +164,6 @@ nav:
   - Exemplos de uso:
     - Como montar o menu: examples/index.md
     - Notebook no menu: examples/notebook/data-exercise-1.ipynb
-    # TROCAR "usuario/ann-dl" pelo seu repositório, senão o link abre o notebook de outra pessoa:
-    - Abrir no Colab ↗: https://colab.research.google.com/github/usuario/ann-dl/blob/main/docs/examples/notebook/data-exercise-1.ipynb
+    - Abrir no Colab ↗: https://colab.research.google.com/github/tiliberman/ann-dl/blob/main/docs/examples/notebook/data-exercise-1.ipynb
 
   - Enunciados da disciplina ↗: https://insper.github.io/ann-dl/

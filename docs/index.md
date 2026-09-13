@@ -18,7 +18,7 @@ Quem responde por este repositório. Os **exercícios são individuais**; a equi
 
 | Nome completo | E-mail | GitHub |
 |---------------|--------|--------|
-| | | |
+| Tiago Liberman | tiago@liberman.com.br | [@tiliberman](https://github.com/tiliberman) |
 
 !!! tip "Como usar este template"
 
