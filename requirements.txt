@@ -16,3 +16,11 @@ numpy
 pandas
 matplotlib
 scikit-learn
+scipy
+
+# --- PyTorch (exercício VAE) ------------------------------------------------
+# Versão CPU: o CI só constrói o site e não precisa dos vários GB de CUDA.
+--extra-index-url https://download.pytorch.org/whl/cpu
+# Versões fixas: o relatório do VAE cita números obtidos com estas versões.
+torch==2.15.0
+torchvision==0.29.2

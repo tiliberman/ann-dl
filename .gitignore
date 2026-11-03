@@ -5,3 +5,5 @@ env/
 target/
 .mcp.json
 __pycache__/
+# MNIST: baixado por torchvision ao rodar docs/exercises/vae/code/exercises.py
+data/MNIST/
